@@ -17,6 +17,7 @@ use jazmy\FormBuilder\Requests\SaveFormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Auth;
 
 class FormController extends Controller
 {
@@ -39,8 +40,19 @@ class FormController extends Controller
     {
         $pageTitle = "Forms";
 
-        $forms = Form::getForUser(auth()->user());
+        $user = Auth::user();
 
+        if ($user->user_type == 'admin' or $user->user_type == 'staff') {
+            $forms = Form::getForAdmin();
+        }
+        else {
+            // $forms = Form::getForUser(auth()->user());
+            $forms = Form::where('coop', $user->coop)
+                    ->withCount('submissions')
+                    ->latest()
+                    ->paginate(10);
+        }
+        // dd($forms);
         return view('formbuilder::forms.index', compact('pageTitle', 'forms'));
     }
 
@@ -76,7 +88,15 @@ class FormController extends Controller
         DB::beginTransaction();
 
         // generate a random identifier
-        $input['identifier'] = $user->id.'-'.Helper::randomString(20);
+        // $input['identifier'] = $user->id.'-'.Helper::randomString(20);
+        $input['identifier'] = strtolower(str_replace(' ', '-', $request->name) . '-' . Helper::randomString(16));
+        $input['name'] = $request->name;
+
+        // $coop = \App\Loan::where('name', 'like', $request->name)->first();
+        // $coop = \App\Loan::findOrFail($request->coop);
+
+        $input['coop'] = $request->coop;
+        $input['loan_id'] = $request->coop;
         $created = Form::create($input);
 
         try {
@@ -109,10 +129,19 @@ class FormController extends Controller
     public function show($id)
     {
         $user = auth()->user();
-        $form = Form::where(['user_id' => $user->id, 'id' => $id])
-                    ->with('user')
-                    ->withCount('submissions')
-                    ->firstOrFail();
+
+        if ($user->user_type == 'admin') {
+            $form = Form::where(['id' => $id])
+                        ->with('user')
+                        ->withCount('submissions')
+                        ->firstOrFail();
+        } else {
+            // $form = Form::where(['user_id' => $user->id, 'id' => $id])
+            $form = Form::where(['id' => $id])
+                        ->with('user')
+                        ->withCount('submissions')
+                        ->firstOrFail();
+        }        
 
         $pageTitle = "Preview Form";
 
@@ -128,8 +157,15 @@ class FormController extends Controller
     public function edit($id)
     {
         $user = auth()->user();
+		
 
-        $form = Form::where(['user_id' => $user->id, 'id' => $id])->firstOrFail();
+        if ($user->user_type == 'admin')
+            $form = Form::where(['id' => $id])->first();
+        elseif ($user->user_type == 'koperasi')
+            $form = Form::where(['id' => $id])->first();		
+        else
+            // $form = Form::where(['user_id' => $user->id, 'id' => $id])->firstOrFail();
+            $form = Form::where(['id' => $id])->first();
 
         $pageTitle = 'Edit Form';
 
@@ -137,6 +173,8 @@ class FormController extends Controller
 
         // get the roles to use to populate the make the 'Access' section of the form builder work
         $form_roles = Helper::getConfiguredRoles();
+
+
 
         return view('formbuilder::forms.edit', compact('form', 'pageTitle', 'saveURL', 'form_roles'));
     }
@@ -151,9 +189,28 @@ class FormController extends Controller
     public function update(SaveFormRequest $request, $id)
     {
         $user = auth()->user();
-        $form = Form::where(['user_id' => $user->id, 'id' => $id])->firstOrFail();
+
+        if ($user->user_type == 'admin'){
+            $form = Form::where(['id' => $id])->firstOrFail();
+            $jalan = 'formbuilder::forms.index';
+            $jalan2 = null;
+        }
+		
+        elseif ($user->user_type == 'koperasi' ){
+            $form = Form::where(['id' => $id])->firstOrFail();
+            $jalan = 'formbuilder::forms.edit';
+            $jalan2 = $id;
+        }		
+        else {
+            // $form = Form::where(['user_id' => $user->id, 'id' => $id])->firstOrFail();
+            $form = Form::where(['id' => $id])->firstOrFail();
+            $jalan = 'formbuilder::forms.edit';
+            $jalan2 = $id;
+        }
 
         $input = $request->except('_token');
+		
+		
 
         if ($form->update($input)) {
             // dispatch the event
@@ -163,7 +220,8 @@ class FormController extends Controller
                     ->json([
                         'success' => true,
                         'details' => 'Form successfully updated!',
-                        'dest' => route('formbuilder::forms.index'),
+                        'dest' => route($jalan, $jalan2),
+                        // formbuilder::forms.index
                     ]);
         } else {
             response()->json(['success' => false, 'details' => 'Failed to update the form.']);
@@ -179,7 +237,7 @@ class FormController extends Controller
     public function destroy($id)
     {
         $user = auth()->user();
-        $form = Form::where(['user_id' => $user->id, 'id' => $id])->firstOrFail();
+        $form = Form::where(['id' => $id])->firstOrFail();
         $form->delete();
 
         // dispatch the event

@@ -6,8 +6,9 @@ jQuery(function() {
         if (ref.val() == "" || ref.val() == 'PUBLIC') {
             $('#allows_edit_DIV').hide()
         } else {
-            $('#allows_edit_DIV').slideDown()
-            $('#allows_edit').val('0')
+            // console.log($('#coop').val())
+            // $('#allows_edit_DIV').slideDown()
+            // $('#allows_edit').val('0')
         }
     });
 
@@ -36,7 +37,7 @@ jQuery(function() {
         ],
         typeUserDisabledAttrs: {
             'file': [
-                'multiple',
+                // 'multiple',
                 'subtype',
             ],
             'checkbox-group': [
@@ -117,12 +118,15 @@ jQuery(function() {
             // console.log(formBuilderArrayData)
 
             var postData = {
+                coop: $('#coop').val(),
                 name: $('#name').val(),
                 visibility: $('#visibility').val(),
                 allows_edit: $('#allows_edit').val(),
                 form_builder_json: formBuilderJSONData,
                 _token: window.FormBuilder.csrfToken
             }
+
+            console.log(postData)
 
             var method = form.data('formMethod') ? 'PUT' : 'POST'
             jQuery.ajax({

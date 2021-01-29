@@ -29,8 +29,8 @@ class CreateFormSubmissionsTable extends Migration
 
             $table->timestamps();
 
-            $table->foreign('form_id')->references('id')->on('forms')->onDelete('CASCADE');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
+            // $table->foreign('form_id')->references('id')->on('forms')->onDelete('CASCADE');
+            // $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
         });
     }
 

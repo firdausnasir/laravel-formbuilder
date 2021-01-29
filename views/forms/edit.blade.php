@@ -1,12 +1,14 @@
 @extends('formbuilder::layout')
 
 @section('content')
+
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title">
+					
                         {{ $pageTitle ?? '' }}
 
                         <div class="btn-toolbar float-md-right" role="toolbar">
@@ -110,6 +112,7 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push(config('formbuilder.layout_js_stack', 'scripts'))

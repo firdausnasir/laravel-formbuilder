@@ -10,7 +10,8 @@ Route::middleware('web')
 		/**
 		 * Public form url
 		 */
-		Route::get('/form/{identifier}', 'RenderFormController@render')->name('form.render');
+		Route::get('/form/{identifier}', 'RenderFormController@render_without')->name('form.render.without');
+		Route::get('/form/{identifier}/{order_id?}', 'RenderFormController@render')->name('form.render');
 		Route::post('/form/{identifier}', 'RenderFormController@submit')->name('form.submit');
 		Route::get('/form/{identifier}/feedback', 'RenderFormController@feedback')->name('form.feedback');
 

@@ -35,14 +35,21 @@ class SubmissionController extends Controller
     {
         $user = auth()->user();
 
-        $form = Form::where(['user_id' => $user->id, 'id' => $form_id])
-                    ->with(['user'])
-                    ->firstOrFail();
+        if ($user->user_type == 'admin') {
+            $form = Form::where('id', $form_id)->firstOrFail();
+        } else {
+            // $form = Form::where(['user_id' => $user->id, 'id' => $form_id])
+            $form = Form::where(['id' => $form_id])
+                        ->with(['user'])
+                        ->firstOrFail();    
+        }        
 
         $submissions = $form->submissions()
                             ->with('user')
                             ->latest()
-                            ->paginate(100);
+                            ->paginate(10);
+
+        // dd($submissions[0]->content);
 
         // get the header for the entries in the form
         $form_headers = $form->getEntriesHeader();
@@ -70,6 +77,8 @@ class SubmissionController extends Controller
                                 'id' => $submission_id,
                             ])
                             ->firstOrFail();
+
+        // dd($submission);
 
         $form_headers = $submission->form->getEntriesHeader();
 

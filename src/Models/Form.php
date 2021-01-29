@@ -14,6 +14,12 @@ class Form extends Model
 {
     const FORM_PUBLIC = "PUBLIC";
     const FORM_PRIVATE = "PRIVATE";
+	 
+
+    public function coop_name () {
+
+	 return $this->belongsTo(\App\Loan::class, 'coop', 'id');
+    }
 
     /**
      * The form visibility constants as an dropdown array
@@ -50,6 +56,7 @@ class Form extends Model
      */
     public function user()
     {
+		
         return $this->belongsTo(config('formbuilder.models.user'));
     }
 
@@ -135,7 +142,14 @@ class Form extends Model
         return static::where('user_id', $user->id)
                     ->withCount('submissions')
                     ->latest()
-                    ->paginate(100);
+                    ->paginate(20);
+    }
+
+    public static function getForAdmin()
+    {
+        return static::withCount('submissions')
+                    ->latest()
+                    ->paginate(20);
     }
 
     /**
@@ -156,5 +170,9 @@ class Form extends Model
                             'type' => $entry['type'] ?? null,
                         ];
                     });
+    }
+
+    public function loan () {
+        return $this->belongsTo(\App\Loan::class);
     }
 }

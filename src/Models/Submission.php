@@ -163,26 +163,30 @@ class Submission extends Model
     {
         $str = '';
 
-        if(
-            ! empty($this->content[$key]) &&
-            is_array($this->content[$key])
-        ) {
+        if(! empty($this->content[$key]) && is_array($this->content[$key])) {
             $str = implode(', ', $this->content[$key]);
+            // if (is_array($str))
+            //     dd('test1');
         } else {
             $str = $this->content[$key] ?? '';
+            // if (is_array($str))
+            //     dd('test');
         }
 
         if ($limit_string) {
+            // if (is_array($str))
+            //     dd($str);
             $str = Str::limit($str, 20, '');
         }
 
         // if the type is 'file' then we have to render this as a link
         if ($type == 'file') {
-		if(isset($this->content[$key])){
-			$file_link = Storage::url($this->content[$key]);
-			$str = "<a href='{$file_link}'>{$str}</a>";
+    		if(isset($this->content[$key])){
+    			// $file_link = Storage::url($this->content[$key]);
+                $file_link = 'https://www.pakude.com/public/' . $this->content[$key];
+    			$str = "<a target='_blank' href='{$file_link}'>{$str}</a>";
 	    	} else {
-			$str = "No file";
+    			$str = "No file";
 	    	}
         }
 

@@ -7,6 +7,10 @@ Last Updated: 12/29/2018
 ----------------------*/
 namespace jazmy\FormBuilder\Services;
 
+
+use App\User;
+use App\Role;
+
 class RolesProvider
 {
 	/**
@@ -19,8 +23,19 @@ class RolesProvider
 	 */
     public function __invoke() : array
     {
-    	return [
+ /*   	return [
     		1 => 'Default',
     	];
+*/
+		
+		$roleOne = Role::where('id',3)->pluck('id')->toArray();
+		$roleTwo = Role::where('id',4)->pluck('id')->toArray();
+		
+	
+		$roles = array_merge($roleOne,$roleTwo ); 
+
+
+		return $roles;	
+		
     }
 }
